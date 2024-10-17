@@ -7,12 +7,111 @@ public class ShoppingMain {
         // 2. 회원데이터 생성 및 초기화
         Member[] members = initializeMemberData();
         // 3. 주문데이터 생성
-        Order ord1 = new Order(1, "user1", 1, 2, 1000.00);
-        Order ord2 = new Order(2, "user2", 2, 1, 300.00);
-        Order ord3 = new Order(3, "user3", 3, 3, 2100.00);
-        Order ord4 = new Order(4, "user4", 4, 4, 600.00);
-        Order ord5 = new Order(5, "user5", 5, 5, 500.00);
+        Order[] orders = initializeOrderData();
+        // 4. 모든 회원 정보 출력
+        printMemberList(members);
+        // 5. 모든 상품 정보 출력
+        printProductList(products);
+        // 6. 모든 주문 정보 출력
+        printOrderList(orders);
+        // 7. 전체 주문 금액 출력
+        TotalOrderAmount(orders);
+        // 8. 모든 주문 정보 출력(화원명과, 상품명 포함)
+        printOrderListWithName(orders, members, products);
+    }
 
+    public static void printOrderListWithName(Order[] orders, Member[] members, Product[] products) {
+        System.out.println("===================");
+        System.out.println("OrderId   MemberName   ProductName  Quantity    TotalAmount   ");
+        System.out.println("-------------------");
+        for (Order order : orders) {
+            String memberName = findMemberName(order.getMemberId(), members);
+            String productName = findProductName(order.getProductId(), products);
+            System.out.println(order.getOrderId() + "\t" + memberName + "\t" + productName + "\t" + order.getQuantity()
+                    + "\t" + order.getTotalAmount());
+        }
+        System.out.println("===================");
+    }
+
+    public static String findProductName(int productId, Product[] products) {
+        String productName = "";
+        for (Product product : products) {
+            if (product.getProductId() == productId) {
+                productName = product.getProductName();
+                break;
+            }
+        }
+        return productName;
+    }
+
+
+    public static String findMemberName(String memberId, Member[] members) {
+        String memberName = "";
+        for (Member member : members) {
+            if (member.getId().equals(memberId)) {
+                memberName = member.getId();
+                break;
+            }
+        }
+        return memberName;
+    }
+
+
+    private static void TotalOrderAmount(Order[] orders) {
+        double totalAmount = 0;
+        for (Order order : orders) {
+            totalAmount += order.getTotalAmount();
+        }
+        System.out.println("전체 주문 금액 $ " + totalAmount);
+    }
+
+
+    private static void printOrderList(Order[] orders) {
+        System.out.println("===================");
+        System.out.println("OrderId   MemberId    ProductId   Quantity   TotalAmount  ");
+        System.out.println("-------------------");
+        for (Order order : orders) {
+            System.out.println(order.getOrderId() + "\t" + order.getMemberId() + "\t" + order.getProductId()
+                    + "\t" + order.getQuantity() + "\t" + order.getTotalAmount());
+        }
+        System.out.println("==================");
+    }
+
+    private static void printProductList(Product[] products) {
+        System.out.println("===================");
+        System.out.println("ProductID   Name    Price   Stock   ");
+        System.out.println("-------------------");
+        for (Product product : products) {
+            System.out.println(product.getProductId() + "\t" + product.getProductName() + "\t" + product.getPrice() + "\t" + product.getStock());
+        }
+        System.out.println("==================");
+    }
+
+    private static void printMemberList(Member[] members) {
+        System.out.println("===================");
+        System.out.println("id      name    email   ");
+        System.out.println("-------------------");
+        for (Member member : members) {
+            System.out.println(member.getId() + "\t" + member.getName() + "\t" + member.getEmail());
+        }
+        System.out.println("==================");
+    }
+
+    // 3. 주문데이터 생성
+//        Order ord1 = new Order(1, "user1", 1, 2, 1000.00);
+//        Order ord2 = new Order(2, "user2", 2, 1, 300.00);
+//        Order ord3 = new Order(3, "user3", 3, 3, 2100.00);
+//        Order ord4 = new Order(4, "user4", 4, 4, 600.00);
+//        Order ord5 = new Order(5, "user5", 5, 5, 500.00);
+
+    private static Order[] initializeOrderData() {
+        Order[] orders = new Order[5];
+        orders[0] = new Order(1, "user1", 1, 2, 1000.00);
+        orders[1] = new Order(2, "user2", 2, 1, 300.00);
+        orders[2] = new Order(3, "user3", 3, 3, 2100.00);
+        orders[3] = new Order(4, "user4", 4, 4, 600.00);
+        orders[4] = new Order(5, "user5", 5, 5, 500.00);
+        return orders;
     }
 
     private static Member[] initializeMemberData() {
