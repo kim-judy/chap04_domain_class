@@ -1,6 +1,5 @@
 package com.javalab.sec22;
 
-
 import com.javalab.sec18.Category;
 import com.javalab.sec18.Employee;
 import com.javalab.sec18.Order;
