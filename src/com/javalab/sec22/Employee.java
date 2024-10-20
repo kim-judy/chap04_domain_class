@@ -1,4 +1,4 @@
-package com.javalab.sec18;
+package com.javalab.sec22;
 
 /**
  * 사원 정보를 저장하는 클래스
@@ -61,5 +61,4 @@ public class Employee {
                 ", salary=" + salary +
                 '}';
     }
-
 }

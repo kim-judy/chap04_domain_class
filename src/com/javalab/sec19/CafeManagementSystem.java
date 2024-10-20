@@ -5,22 +5,26 @@ import com.javalab.sec18.Employee;
 import com.javalab.sec18.Order;
 import com.javalab.sec18.Product;
 
+
 public class CafeManagementSystem {
 
-
-    public void main(String[] args) {
+    public static void main(String[] args) {
         System.out.println("Cafe Management System");
-
+        // 1. 카테고리 데이터 생성
         Category[] categories = initializeCategoryData();
-        Product[] products = initializeProductData();
+        printCategory(categories);
 
-        //특정 카테고리에 속한 상품들 출력,카테고리 이름을 전달해서 해당 카테고리에 속한 상품들을 반환
+        // 2. 상품 데이터 생성
+        Product[] products = initializeProductData();
+        printProduct(products);
+
+        // 3. 특정 카테고리에 속한 상품들 출력, 카테고리 이름을 전달해서 해당 카테고리에 속한 상품들을 반환
         Product[] categoryProducts = getProductsByCatoryName("Coffee", categories, products);
 
-        //찾아진 카테고리에 소속된 상품들 출력하기, 메소드로 분리
+        // 4. 위에서 찾아진 카테고리에 소속된 상품들 출력하기
         printProductListWithCategoryName(categoryProducts);
 
-        //상품의 이름으로 상품 조회 (1개만 조회)
+        // 5. 상품의 이름으로 상품 1개만 조회
         Product product = findProductByName("초코라떼", products);
 
         // 6. 찾아진 상품 출력
@@ -38,31 +42,123 @@ public class CafeManagementSystem {
 
         // 10. 주문 기초 데이터 생성
         Order[] orders = initializeOrderData();
+
+        // 11. 주문을 처리하는 메소드
+        // Alice 사원이 2024-10-17 03:52에 1번 상품을 2개 주문하는 건을 처리함.
+        // 주문 객체 생성
+        //Order order1 = new Order(0, "2024-10-17 03:52", 1, 201, 2);
+        // 주문 추가 메소드
+        //addOrder(order1, orders);
+
+        //12. 주문 데이터 출력
         showOrderData(categories, products, orders, employees);
 
-        // 11. 사원별 주문 처리 건수
-        showOrderEmployee(employees, orders);
+        // 13. 주문 통계 출력 메소드
+        // - 총주문금액(중)
+        // - 가장 큰 주문액
+        //showOrderStatistics(orders, categories, products, employees);
 
+        // 14. 사원별 주문 처리 건수 출력
+        showOrderCountByEmployee(orders, employees);
+
+        // 15. 베스트 셀링 상품 출력
+        showBestSellingProduct(orders, products);
+
+        // 16. 최고 매출을 올린 사원
+        showBestEmployee(employees, orders, products);
 
     }
 
-    private void showOrderEmployee(Employee[] employees, Order[] orders) {
-        System.out.println("=============================================");
-        System.out.println(" EmployeeID sum ");
 
-        int sum = 0;
-        int totalOrderCount = 0; // 주문 건수
-        for (int i = 0; i < employees.length; i++) {
-            sum = employees[i].getEmployeeId();
-            totalOrderCount = orders[i].getQuantity();
+    private static void showBestEmployee(Employee[] employees, Order[] orders, Product[] products) {
+        System.out.println("<< 최고 매출을 올린 사원 >>");
+        Employee topEmployee = null;
+        int highestSales = 0;
+        for (Employee employee : employees) {
+            int totalSales = 0;
+            for (Order order : orders) {
+                if (order.getEmployeeId() == employee.getEmployeeId()) {
+                    int price = findPrice(order.getProductId(), products);
+                    totalSales += order.getQuantity() * price; // 해당 사원이 처리한 주문의 총금액이 누적
+                }
+            }
+            if (totalSales > highestSales) {
+                highestSales = totalSales;
+                topEmployee = employee;
+            }
         }
-        System.out.println(sum + totalOrderCount);
+        if (topEmployee != null) {
+            System.out.println("최고 매출을 기록한 사원: " + topEmployee.getName() + ", 총 매출: "
+                    + highestSales + "원");
+        }
+        System.out.println("=============================================");
     }
 
+    // 상품의 id로 상품 가격을 찾는 메소드
+    private static int findPrice(int productId, Product[] products) {
+        for (Product product : products) {
+            if (product.getProductId() == productId) {
+                return (int) product.getPrice();
+            }
+        }
+        return 0;
+    }
+
+    private static void showBestSellingProduct(Order[] orders, Product[] products) {
+        System.out.println("<< 베스트 셀링 상품 >>");
+        Product bestSellingProduct = null;  // 가장 많이 판매된 상품을 보관할 변수
+        int highestQuantity = 0;        // 가장 많이 판매된 상품의 판매 수량을 보관할 변수
+        for (Product product : products) {
+            int totalQuantity = 0; // 상품별 총 판매 수량을 보관할 변수
+            for (Order order : orders) {
+                if (order.getProductId() == product.getProductId()) {
+                    totalQuantity += order.getQuantity(); // 상품별 총 판매 수량 누적
+                }
+            }
+            // 위에서 구해진 상품별 총 판매 수량이 가장 많은 상품을 찾기 위해서 비교
+            if (totalQuantity > highestQuantity) {
+                highestQuantity = totalQuantity;
+                bestSellingProduct = product;
+            }
+        }
+        if (bestSellingProduct != null) {
+            System.out.println("가장 많이 판매된 상품: " + bestSellingProduct.getProductName()
+                    + ", 판매 수량: " + highestQuantity);
+        }
+        System.out.println("=============================================");
+    }
+
+    private static void showOrderCountByEmployee(Order[] orders, Employee[] employees) {
+        System.out.println("<< 사원별 주문 처리 건수 출력 >>");
+        for (Employee employee : employees) {
+            int orderCount = 0; // 한 사원의 주문처리건수 누적 변수를 초기화
+            for (Order order : orders) {
+                if (order.getEmployeeId() == employee.getEmployeeId()) { // 사원이 처리한 주문인 경우
+                    orderCount++; // 주문 처리 건수 누적
+                }
+            }
+            System.out.println(employee.getName() + " 사원이 처리한 주문 건수: " + orderCount);
+        }
+        System.out.println("=============================================");
+    }
+
+    //    private static void showOrderEmployee(Employee[] employees, Order[] orders) {
+//        System.out.println("=============================================");
+//        System.out.println(" EmployeeID     주문건수 ");
+//        int emp = 0;
+//        int totalOrderCount = 0; // 주문 건수
+//        for (int i = 0; i < employees.length; i++) {
+//            for (Order order : orders) {
+//                emp = employees[i].getEmployeeId();
+//                totalOrderCount += order.getQuantity();
+//            }
+//        }
+//        System.out.println(emp + "-" + totalOrderCount);
+//
+//    }
 
     private static void printEmployeeData(Employee[] employees) {
         System.out.println("<< 사원 데이터 출력 >>");
-        System.out.println("=============================================");
         System.out.println(" EmployeeID Name Position Salary ");
         System.out.println("---------------------------------------------");
         for (Employee employee : employees) {
@@ -74,8 +170,7 @@ public class CafeManagementSystem {
 
     private static void printProduct(Product[] products) {
         System.out.println("<< 상품 데이터 출력 >>");
-        System.out.println("=============================================");
-        System.out.println(" ProductID Name CategoryId Price ");
+        System.out.println(" ProductId Name CategoryId Price ");
         System.out.println("---------------------------------------------");
         for (Product product : products) {
             System.out.println(product.getProductId() + "\t" + product.getProductName() + "\t" +
@@ -86,7 +181,6 @@ public class CafeManagementSystem {
 
     private static void printCategory(Category[] categories) {
         System.out.println("<< 카테고리 데이터 출력 >>");
-        System.out.println("=============================================");
         System.out.println(" CategoryID Name Description ");
         System.out.println("---------------------------------------------");
         for (Category category : categories) {
@@ -95,10 +189,17 @@ public class CafeManagementSystem {
         System.out.println("=============================================");
     }
 
+    /**
+     * 주문 데이터 출력
+     *
+     * @param categories
+     * @param products
+     * @param orders
+     * @param employees
+     */
     private static void showOrderData(Category[] categories, Product[] products,
                                       Order[] orders, Employee[] employees) {
         System.out.println("<< 주문 데이터 출력 >>");
-        System.out.println("======================================================================================");
         System.out.println(" OrderID OrderDate ProductID productName CategoryName EmployeeID EmployeeName Quantity ");
         System.out.println("---------------------------------------------------------------------------------------");
 
@@ -116,10 +217,8 @@ public class CafeManagementSystem {
             // 사원 정보 출력
             Employee employee = findEmployeeById(order.getEmployeeId(), employees);
 
-            //주문 금액 계산
-
             // 주문 금액 계산
-            int orderAmount = (int) (product.getPrice() * order.getQuantity());
+            int orderAmount = (int) product.getPrice() * order.getQuantity();
             totalOrderAmount += orderAmount; // 총 주문 금액 누적
 
             // 가장 큰 주문 찾기
@@ -138,6 +237,8 @@ public class CafeManagementSystem {
 
         // 총 주문 금액 출력
         System.out.println("총 주문 금액: " + totalOrderAmount + "원");
+
+        // 가장 금액이 높은 주문 출력
         if (highestOrder != null) {
             Product highestProduct = findProductById(highestOrder.getProductId(), products);
             System.out.println("가장 금액이 높은 주문: 주문ID " + highestOrder.getOrderId() + ", 상품명: " + highestProduct.getProductName() +
@@ -183,6 +284,7 @@ public class CafeManagementSystem {
         return null;
     }
 
+
     /**
      * 빵 카테고리에 속한 상품들의 가격을 밀가루값 인상으로 15% 인상하는 메소드
      * - 빵 카테고리 : categoryId = 5
@@ -191,7 +293,7 @@ public class CafeManagementSystem {
      */
     private static void increaseBakeryPrice(Product[] products) {
         for (Product product : products) {
-            if (product.getCategoryId() == 5) {
+            if (product.getCategoryId() == 5) {  // 빵 카테고리
                 int beforePrice = (int) product.getPrice();
                 int afterPrice = (int) (beforePrice * 1.15);
                 product.setPrice(afterPrice);
@@ -205,14 +307,14 @@ public class CafeManagementSystem {
      * 상품의 가격을 변경하는 메소드
      *
      * @param productName
-     * @param price
+     * @param price       변화시킬 가격
      * @param products
      */
     private static void updateProductPrice(String productName, int price, Product[] products) {
         for (Product product : products) {
             if (product.getProductName().equals(productName)) {
                 int beforePrice = (int) product.getPrice();
-                product.setPrice(price);
+                product.setPrice(price); // 세터 메소드를 사용해서 가격 변경
                 System.out.println(product.getProductName() + " 상품의 가격이 " + beforePrice + "에서 " + price +
                         "로 변경되었습니다.");
                 break;
@@ -222,7 +324,6 @@ public class CafeManagementSystem {
 
     private static void printOneProduct(Product product) {
         System.out.println("<< 특정 카테고리의 상품 1개 출력 >>");
-        System.out.println("=============================================");
         System.out.println(" ProductID Name CategoryId Price ");
         System.out.println("---------------------------------------------");
         System.out.println(product.getProductId() + "\t" + product.getProductName() + "\t" +
@@ -242,26 +343,30 @@ public class CafeManagementSystem {
         return product;
     }
 
+    /**
+     * 특정 카테고리에 속한 상품들을 출력하는 메소드
+     *
+     * @param categoryProducts
+     */
     private static void printProductListWithCategoryName(Product[] categoryProducts) {
+        // 상품 가격 누적 변수
         int totalAmount = 0;
-
-        System.out.println("===================");
-        System.out.println("ProductId   ProductName   CategoryId  Price   ");
-        System.out.println("-------------------");
+        System.out.println("=============================================");
+        System.out.println(" ProductID Name CategoryId Price ");
+        System.out.println("---------------------------------------------");
         for (Product product : categoryProducts) {
             if (product == null) {
                 break;
             }
-            System.out.println(product.getProductId() + "\t" + product.getProductName() +
-                    "\t" + product.getCategoryId() + "\t" + product.getPrice());
-            totalAmount += product.getPrice();
+            System.out.println(product.getProductId() + "\t" + product.getProductName() + "\t" +
+                    product.getCategoryId() + "\t" + product.getPrice());
+            totalAmount += product.getPrice();  // 상품 가격 누적
         }
-        System.out.println("===================");
-        System.out.println("카테고리에 소속된 상품의 합계 : $" + totalAmount);
+        System.out.println("=============================================");
+        System.out.println("카테고리에 소속된 상품의 합계: $" + totalAmount);
     }
 
-
-    //특정 카테고리에 속한 상품들을 반환하는 메소드
+    // 특정 카테고리에 속한 상품들을 반환하는 메소드
     public static Product[] getProductsByCatoryName(String categoryName,
                                                     Category[] categories,
                                                     Product[] products) {
@@ -285,6 +390,7 @@ public class CafeManagementSystem {
         }
         return categoryProducts;
     }
+
 
     public static Category[] initializeCategoryData() {
         Category[] categories = new Category[6];

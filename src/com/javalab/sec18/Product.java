@@ -1,7 +1,7 @@
 package com.javalab.sec18;
 
 public class Product {
-    private int productId;
+    private long productId;
     private String productName;
     private int categoryId;
     private double price;
@@ -16,7 +16,7 @@ public class Product {
         this.price = price;
     }
 
-    public int getProductId() {
+    public long getProductId() {
         return productId;
     }
 
